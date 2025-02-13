@@ -1,12 +1,15 @@
 .data
-.include "sprites/Kirby0.s"
-.include "sprites/tileMap.s"
-.include "sprites/map2teste.s"
+.include "sprites/"
+.include "sprites/"
+.include "sprites/"
 
 KIRBY_POS:	.half 0,0
 OLD_KIRBY_POS: 	.half 0,0
 
 .text
+		# Adicionar uma imagem de Menu
+		call MUSIC	# Toca a música inicial
+		
 SETUP:	
 		la a0, map2teste
 		li a1, 0
@@ -173,3 +176,7 @@ PRINT_LINHA:	lw t6, 0(t1)	# pega de 4 em 4 pixeis da imagem  -> imagem deve ser 
 		
 		ret
 		
+
+# imports
+.include "music.s"
+

@@ -1,9 +1,3 @@
-###############################################
-#  Programa de exemplo para Syscall MIDI      #
-#  ISC Abr 2018				      #
-#  Marcus Vinicius Lamar		      #
-###############################################
-
 # Kirby's music
 
 .data
@@ -13,6 +7,8 @@ NUM: .word 62
 NOTAS: 79,249,79,83,91,333,84,499,96,333,93,166,91,333,84,499,91,333,89,166,88,166,88,166,89,166,91,166,84,333,86,333,88,1332,91,333,84,499,96,333,93,166,91,333,84,499,91,333,89,166,88,166,88,166,89,166,91,166,84,333,86,333,84,1332,84,249,84,83,86,166,88,333,84,166,86,166,84,166
 
 .text
+
+MUSIC:
 	la s0,NUM		# define o endereço do número de notas
 	lw s1,0(s0)		# le o numero de notas
 	la s0,NOTAS		# define o endereço das notas
@@ -20,7 +16,7 @@ NOTAS: 79,249,79,83,91,333,84,499,96,333,93,166,91,333,84,499,91,333,89,166,88,1
 	li a2,7			# define o instrumento
 	li a3,70		# define o volume
 
-LOOP:	beq t0,s1, FIM		# contador chegou no final? então  vá para FIM
+LOOP:	beq t0,s1, TERMINA	# contador chegou no final? então  vá para TERMINA
 	lw a0,0(s0)		# le o valor da nota
 	lw a1,4(s0)		# le a duracao da nota
 	li a7,31		# define a chamada de syscall
@@ -32,7 +28,16 @@ LOOP:	beq t0,s1, FIM		# contador chegou no final? então  vá para FIM
 	addi t0,t0,1		# incrementa o contador de notas
 	j LOOP			# volta ao loop
 	
-FIM:	
-	li a7,10		# define o syscall Exit
-	ecall			# exit
+TERMINA: # Limpa todos os registradores e retorna para o game principal
+	
+	li s0, 0
+	li s1, 0
+	li a0, 0
+	li a1, 0
+	li a2, 0
+	li a3, 0
+	li a7, 0
+	li t0, 0	
+	ret			# Retorna para o game principal
 
+# carrega 0 provisoriamente ja que nao temos nada de importante
