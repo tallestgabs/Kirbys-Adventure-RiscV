@@ -12,28 +12,19 @@
 .include "sprites/kirbyTile.s"			# Tile do Personagem
 
 
-KIRBY_POS:	.half 0,0
-OLD_KIRBY_POS: 	.half 0,0
+KIRBY_POS:	.half 16,175
+OLD_KIRBY_POS: 	.half 16,175
 
 .text
 		call CARREGA_MAPA
 		
 		la a0, kirbyTile
 		li a1, 16			# coluna
-		li a2, 192			# linha
+		li a2, 175			# linha
 		li a3, 0			# frame 0
 		call PRINT
 		
 		call MUSIC			# Toca a música inicial
-		
-SETUP:	
-		la a0, backgroundTile
-		li a1, 0
-		li a2, 0
-		li a3, 0
-		call PRINT
-		li a3, 1
-		call PRINT
 	
 	
 GAME_LOOP: 	call KEY2
@@ -46,14 +37,15 @@ GAME_LOOP: 	call KEY2
 		lh a1, 0(t0)
 		lh a2, 2(t0)			# 2 porque é half word, para word é 4
 		mv a3, s0
+		
 		call PRINT
-	
-		li t0, 0xFF200604		# escolhe o frfame 0 ou 1
+		
+		li t0, 0xFF200604		# escolhe o frame 0 ou 1
 		sw s0, 0(t0)
 		
 		la t0, OLD_KIRBY_POS
 		
-		la a0, chaoTile
+		la a0, backgroundTile
 		lh a1, 0(t0)
 		lh a2, 2(t0)			# 2 porque é half word, para word é 4
 		
@@ -66,10 +58,10 @@ GAME_LOOP: 	call KEY2
 	
 	
 ### Apenas verifica se ha tecla pressionada
-KEY2:		li t1,0xFF200000		# carrega o endere�o de controle do KDMMIO
+KEY2:		li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
 		lw t0,0(t1)			# Le bit de Controle Teclado
 		andi t0,t0,0x0001		# mascara o bit menos significativo
-   		beq t0,zero,FIM   	   	# Se n�o h� tecla pressionada ent�o vai para FIM
+   		beq t0,zero,FIM   	   	# Se nao ha tecla pressionada entao vai para FIM
   		lw t2,4(t1)  			# le o valor da tecla tecla
   		
   		
@@ -86,7 +78,8 @@ KEY2:		li t1,0xFF200000		# carrega o endere�o de controle do KDMMIO
 		li t0, 'd'			# carrega codigo ascii da letra
 		beq t2, t0, KIRBY_MOVE_DIREITA
 	
-FIM:		ret				# retorna
+FIM:
+		ret				# retorna
 
 
 
@@ -99,6 +92,7 @@ KIRBY_MOVE_CIMA:
 		lh t1, 2(t0)
 		addi t1, t1, -16
 		sh t1,2(t0)
+
 		ret
 		
 
@@ -204,8 +198,14 @@ PRINT_LINHA:	lw t6, 0(t1)			# pega de 4 em 4 pixeis da imagem  -> imagem deve se
 # 7 = porta
 # 8 = porta
 
+#---------------------------------------------------------
+# t0 = contador de coluna
+# t1 = valores dos tiles e também é usado para comparações
+# t2 = contador de linha
+# t3 = endereço da matriz do mapa
+# t4 = tipo de tile que será printado
+
 CARREGA_MAPA:
-		# apenas para comparação para o beq (refatorar depois se der tempo)
 		# 0 usa registrador
 	
 		addi sp, sp, -52
@@ -238,12 +238,12 @@ CARREGA_MAPA:
 		li t0, 0 			# 20 * 16 = 320 para o contador de colunas  (limite será 20)  
 		li t2, 0			# 15 * 16 = 240 para o contador de linha (limite será 15)
 		la t3, mapaMatriz		# carrega matriz em t3
-		addi t3, t3, 4			# pula as words da imagem
+		addi t3, t3, 8			# pula as words da imagem
 		
 MAP_LOOP:		
 		
 		lb t4, 0(t3)			# guarda o tipo de tile que será printado	(5 porque ignora as duas primeiras words e pega o proximo byte)
-		
+
 		lw t1, 16(sp)			# pega o valor 5
 		addi t1, t1, 15			# adiciona 15 para dar 20 e fazer a comparação
 		beq t0, t1, INCREMENTA_LINHA	# coluna = 20? INCREMENTA linha e zera coluna
@@ -259,25 +259,25 @@ MAP_LOOP:
 		beq t4, t1, PRINTA_CHAO
 		
 		lw t1, 4(sp)			# pega o valor 2
-		beq t4, t2, PRINTA_NUVEM_DIR
+		beq t4, t1, PRINTA_NUVEM_DIR
 		
 		lw t1, 8(sp)			# pega o valor 3
-		beq t4, t3, PRINTA_NUVEM_ESQ
+		beq t4, t1, PRINTA_NUVEM_ESQ
 		
 		lw t1, 12(sp)			# pega o valor 4
-		beq t4, t4, PRINTA_NUVEM_MEIO
+		beq t4, t1, PRINTA_NUVEM_MEIO
 		
 		lw t1, 16(sp)			# pega o valor 5
-		beq t4, t5, PRINTA_PORTA_DIR_BAIXO
+		beq t4, t1, PRINTA_PORTA_DIR_BAIXO
 		
 		lw t1, 20(sp)			# pega o valor 6
-		beq t4, t6, PRINTA_PORTA_DIR_CIMA
+		beq t4, t1, PRINTA_PORTA_DIR_CIMA
 		
 		lw t1, 24(sp)			# pega o valor 7
-		beq t4, s0, PRINTA_PORTA_ESQ_BAIXO
+		beq t4, t1, PRINTA_PORTA_ESQ_BAIXO
 		
 		lw t1, 26(sp)			# pega o valor 8
-		beq t4, s1, PRINTA_PORTA_ESQ_CIMA
+		beq t4, t1, PRINTA_PORTA_ESQ_CIMA
 
 		
 LEAVE:		
@@ -289,6 +289,9 @@ LEAVE:
 INCREMENTA_LINHA:
 		li t0, 0			# renova contador de coluna
 		addi t2, t2, 1			# aumenta o contador de linha
+
+		addi t3, t3, 80			# largura do display
+		addi t3, t3, -20		# subtrai pela largura da matriz
 		j MAP_LOOP
 	
 				
@@ -305,6 +308,9 @@ PRINTA_BACKGROUND:
 		sw t2, 40(sp)
 		sw t3, 44(sp)
 		
+		call PRINT
+		
+		li a3, 1			# para printar no frame 1 também
 		call PRINT
 		
 		# restaura os valores
@@ -330,6 +336,9 @@ PRINTA_CHAO:
 		
 		call PRINT
 		
+		li a3, 1			# para printar no frame 1 também
+		call PRINT
+		
 		# restaura os valores
 		lw t0, 36(sp)
 		lw t2, 40(sp)
@@ -351,6 +360,9 @@ PRINTA_NUVEM_DIR:
 		sw t2, 40(sp)
 		sw t3, 44(sp)
 		
+		call PRINT
+		
+		li a3, 1			# para printar no frame 1 também
 		call PRINT
 		
 		# restaura os valores
@@ -376,6 +388,9 @@ PRINTA_NUVEM_ESQ:
 		
 		call PRINT
 		
+		li a3, 1			# para printar no frame 1 também
+		call PRINT
+		
 		# restaura os valores
 		lw t0, 36(sp)
 		lw t2, 40(sp)
@@ -397,6 +412,9 @@ PRINTA_NUVEM_MEIO:
 		sw t2, 40(sp)
 		sw t3, 44(sp)
 		
+		call PRINT
+		
+		li a3, 1			# para printar no frame 1 também
 		call PRINT
 		
 		# restaura os valores
@@ -422,6 +440,9 @@ PRINTA_PORTA_DIR_BAIXO:
 		
 		call PRINT
 		
+		li a3, 1			# para printar no frame 1 também
+		call PRINT
+		
 		# restaura os valores
 		lw t0, 36(sp)
 		lw t2, 40(sp)
@@ -443,6 +464,9 @@ PRINTA_PORTA_DIR_CIMA:
 		sw t2, 40(sp)
 		sw t3, 44(sp)
 		
+		call PRINT
+		
+		li a3, 1			# para printar no frame 1 também
 		call PRINT
 		
 		# restaura os valores
@@ -468,6 +492,9 @@ PRINTA_PORTA_ESQ_BAIXO:
 		
 		call PRINT
 		
+		li a3, 1			# para printar no frame 1 também
+		call PRINT
+		
 		# restaura os valores
 		lw t0, 36(sp)
 		lw t2, 40(sp)
@@ -489,6 +516,9 @@ PRINTA_PORTA_ESQ_CIMA:
 		sw t2, 40(sp)
 		sw t3, 44(sp)
 		
+		call PRINT
+		
+		li a3, 1			# para printar no frame 1 também
 		call PRINT
 		
 		# restaura os valores
