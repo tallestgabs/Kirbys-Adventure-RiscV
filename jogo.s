@@ -16,6 +16,29 @@ KIRBY_POS:	.half 16,175
 OLD_KIRBY_POS: 	.half 16,175
 
 .text
+.macro sound_effect(%a0,%a1,%a2,%a3)
+		addi sp, sp, -20   # Reserva espaço na pilha
+		sw a0, 0(sp)       # Salva a0
+		sw a1, 4(sp)       # Salva a1
+		sw a2, 8(sp)       # Salva a2
+		sw a3, 12(sp)      # Salva a3
+		sw a7, 16(sp)      # Salva a7
+		
+	        li a0 %a0
+	        li a1 %a1
+	        li a2 %a2
+	        li a3 %a3
+	        li a7 31
+	        ecall
+	        
+	        lw a0, 0(sp)       # Restaura a0
+		lw a1, 4(sp)       # Restaura a1
+		lw a2, 8(sp)       # Restaura a2
+		lw a3, 12(sp)      # Restaura a3
+		lw a7, 16(sp)      # Restaura a7
+		addi sp, sp, 20    # Libera espaço na pilha
+.end_macro	
+	
 		call CARREGA_MAPA
 		
 		la a0, kirbyTile
@@ -24,7 +47,7 @@ OLD_KIRBY_POS: 	.half 16,175
 		li a3, 0			# frame 0
 		call PRINT
 		
-		call MUSIC			# Toca a mÃºsica inicial
+		#call MUSIC			# Toca a mÃºsica inicial
 	
 	
 GAME_LOOP: 	call KEY2
@@ -64,8 +87,6 @@ KEY2:		li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
    		beq t0,zero,FIM   	   	# Se nao ha tecla pressionada entao vai para FIM
   		lw t2,4(t1)  			# le o valor da tecla tecla
   		
-  		
-  		
   		li t0, 'w'			# carrega codigo ascii da letra
 		beq t2, t0, KIRBY_MOVE_CIMA
 	
@@ -77,7 +98,7 @@ KEY2:		li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
 		
 		li t0, 'd'			# carrega codigo ascii da letra
 		beq t2, t0, KIRBY_MOVE_DIREITA
-	
+		
 FIM:
 		ret				# retorna
 
@@ -92,11 +113,11 @@ KIRBY_MOVE_CIMA:
 		lh t1, 2(t0)
 		addi t1, t1, -16
 		sh t1,2(t0)
-
 		ret
 		
 
 KIRBY_MOVE_ESQUERDA:
+		
 		la t0, KIRBY_POS
 		la t1, OLD_KIRBY_POS
 		lw t2, 0(t0)
@@ -105,6 +126,7 @@ KIRBY_MOVE_ESQUERDA:
 		lh t1, 0(t0)
 		addi t1, t1, -16
 		sh t1,0(t0)
+		
 		ret
 		
 		
@@ -120,6 +142,8 @@ KIRBY_MOVE_BAIXO:
 		ret
 		
 KIRBY_MOVE_DIREITA:
+		
+		
 		la t0, KIRBY_POS
 		la t1, OLD_KIRBY_POS
 		lw t2, 0(t0)
@@ -128,6 +152,7 @@ KIRBY_MOVE_DIREITA:
 		lh t1, 0(t0)
 		addi t1, t1, 16
 		sh t1,0(t0)
+		
 		ret
 
 
@@ -276,8 +301,8 @@ MAP_LOOP:
 		lw t1, 24(sp)			# pega o valor 7
 		beq t4, t1, PRINTA_PORTA_ESQ_BAIXO
 		
-		lw t1, 26(sp)			# pega o valor 8
-		beq t4, t1, PRINTA_PORTA_ESQ_CIMA
+		#lw t1, 26(sp)			# pega o valor 8
+		#beq t4, t1, PRINTA_PORTA_ESQ_CIMA
 
 		
 LEAVE:		
@@ -534,8 +559,7 @@ PRINTA_PORTA_ESQ_CIMA:
 EXIT:
 	li a7, 10
 	ecall
-	
-	
+
 # imports
 .include "music.s"
 

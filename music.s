@@ -38,8 +38,8 @@ LOOP:	beq t0,s1, TERMINA	# contador chegou no final? então  vá para TERMINA
 	addi s0,s0,8		# incrementa para o endereço da próxima nota
 	addi t0,t0,1		# incrementa o contador de notas
 	j LOOP			# volta ao loop
-	
 
+       
 # não funciona ainda
 WALKSOUND:
 	# salva os registradores do programa principal
