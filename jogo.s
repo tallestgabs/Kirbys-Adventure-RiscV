@@ -16,6 +16,29 @@ KIRBY_POS:	.half 16,175
 OLD_KIRBY_POS: 	.half 16,175
 
 .text
+.macro sound_effect(%a0,%a1,%a2,%a3)
+		addi sp, sp, -20   # Reserva espaço na pilha
+		sw a0, 0(sp)       # Salva a0
+		sw a1, 4(sp)       # Salva a1
+		sw a2, 8(sp)       # Salva a2
+		sw a3, 12(sp)      # Salva a3
+		sw a7, 16(sp)      # Salva a7
+		
+	        li a0 %a0
+	        li a1 %a1
+	        li a2 %a2
+	        li a3 %a3
+	        li a7 31
+	        ecall
+	        
+	        lw a0, 0(sp)       # Restaura a0
+		lw a1, 4(sp)       # Restaura a1
+		lw a2, 8(sp)       # Restaura a2
+		lw a3, 12(sp)      # Restaura a3
+		lw a7, 16(sp)      # Restaura a7
+		addi sp, sp, 20    # Libera espaço na pilha
+.end_macro
+
 		call CARREGA_MAPA
 		
 		la a0, kirbyTile
@@ -65,7 +88,7 @@ KEY2:		li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
   		lw t2,4(t1)  			# le o valor da tecla tecla
   		
   		
-  		
+  		sound_effect(60, 200, 120 65)
   		li t0, 'w'			# carrega codigo ascii da letra
 		beq t2, t0, KIRBY_MOVE_CIMA
 	
@@ -77,7 +100,7 @@ KEY2:		li t1,0xFF200000		# carrega o endereco de controle do KDMMIO
 		
 		li t0, 'd'			# carrega codigo ascii da letra
 		beq t2, t0, KIRBY_MOVE_DIREITA
-	
+		
 FIM:
 		ret				# retorna
 
